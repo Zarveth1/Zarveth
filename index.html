@@ -24,8 +24,27 @@
             border-radius: 8px;
             margin: 20px 0;
         }
-        .container {
+        .login-container {
             display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+        .login-container input {
+            width: 200px;
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .container {
+            display: none;
+            flex: 1;
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
@@ -95,7 +114,18 @@
 </head>
 <body>
     <div class="header"></div>
-    <div class="container">
+
+    <!-- Admin Giriş Paneli -->
+    <div id="loginPanel" class="login-container">
+        <h2>Admin Girişi</h2>
+        <input type="text" id="username" placeholder="Kullanıcı Adı">
+        <input type="password" id="password" placeholder="Şifre">
+        <button onclick="checkLogin()">Giriş Yap</button>
+        <p id="loginError" style="color: red; display: none;">Yanlış kullanıcı adı veya şifre!</p>
+    </div>
+
+    <!-- Admin Paneli İçeriği (gizli olarak başlar) -->
+    <div id="adminPanel" class="container">
         <div class="search-container">
             <h1>Personel Arama</h1>
             <input type="text" id="searchInput" placeholder="İsimle Ara" onkeyup="searchFunction()">
@@ -108,80 +138,96 @@
             <img id="profileImage" src="https://via.placeholder.com/250" alt="Personel Fotoğrafı">
         </div>
     </div>
+
     <script>
-        const personelListesi = {
-            "ArysS": "Şef: MeteTR55pro, 23SS-59 | SonSamurai34, 4SS-66 | Zirekmelik3466",
-            "MeteTR55pro": "Şef: ArysS, 23SS-59 | SonSamurai34, 4SS-66 | Zirekmelik3466",
-            "SonSamurai34": "Şef: ArysS, MeteTR55pro, 23SS-59 | 4SS-66 | Zirekmelik3466",
-            "Zirekmelik3466": "Şef: ArysS, MeteTR55pro, 23SS-59 | SonSamurai34, 4SS-66",
-            "Risimo22": "Akedemi Yetkilisi: 6IP-81 | 6IP-31 | Interpol Ulusal Polis: 6IP-81",
-            "Zarveth": "Akedemi Yetkilisi: 6IP-81 | 6IP-31 | Interpol Ulusal Polis: 6IP-81",
-            "Lekr505": "Mit Müsteşarı: 5SS-55 | 23SS-59 | SonSamurai34",
-            "Kal133kler": "Mit Ajanı: j2ckae, kal133kler, realmrtty",
-            "J2ckae": "Mit Ajanı: j2ckae, kal133kler, realmrtty",
-            "Realmrtty": "Mit Ajanı: j2ckae, kal133kler, realmrtty",
-            "Xozowa4": "Meslekler Müdürü: 4ME-44 | xOZOWA4",
-            "MKataturkmk": "Sheriff: 7SH-33 | 4SH-89 | ByDeagles, 59SH-34 | Kermesek",
-            "ByDeagles": "Sheriff: 7SH-33 | MKataturkmk, 4SH-89 | Kermesek",
-            "Kermesek": "Sheriff: 7SH-33 | MKataturkmk, 4SH-89 | ByDeagles",
-            "Omerturk1214": "Emniyet Müdürü: 8EM-15 | omerturk1214 | Colonel: 8EM-15 | omerturk1214",
-            "Hebelseven31": "Trooper: 2T-59 | 4T-32 | 78egepro2",
-            "78egepro2": "Trooper: 2T-59 | hebelseven31, 4T-32",
-            "St | 0xb4r4n": "Stajer personel: ST | 0xB4r4n",
-            "St | BoraPROracer": "Stajer personel: ST | BoraPROracer",
-            "St | Kreren111": "Stajer personel: ST | Kreren111",
-            "St | TRAli021": "Stajer personel: ST | TRAli021"
-        };
+const personelListesi = {
+    "ArysS": { name: "Şef: MeteTR55pro, 23SS-59 | SonSamurai34, 4SS-66 | Zirekmelik3466", image: "https://trthaberstatic.cdn.wp.trt.com.tr/resimler/2012000/polis-pomem-2012009.jpg" },
+    "MeteTR55pro": { name: "Şef: ArysS, 23SS-59 | SonSamurai34, 4SS-66 | Zirekmelik3466", image: "https://trthaberstatic.cdn.wp.trt.com.tr/resimler/2012000/polis-pomem-2012009.jpg" },
+    "SonSamurai34": { name: "Şef: ArysS, MeteTR55pro, 23SS-59 | 4SS-66 | Zirekmelik3466 | Baş Şerif: 23SS-59", image: "https://trthaberstatic.cdn.wp.trt.com.tr/resimler/2012000/polis-pomem-2012009.jpg" },
+    "Zirekmelik3466": { name: "Şef: ArysS, MeteTR55pro, 23SS-59 | SonSamurai34, 4SS-66", image: "https://trthaberstatic.cdn.wp.trt.com.tr/resimler/2012000/polis-pomem-2012009.jpg" },
+    "Risimo22": { name: "Akedemi Yetkilisi: 6IP-81 | 6IP-31 | Interpol Ulusal Polis: 6IP-81", image: "https://logonoid.com/images/interpol-logo.jpg" },
+    "Zarveth": { name: "Akedemi Yetkilisi: 6IP-81 | 6IP-31 | Interpol Ulusal Polis: 6IP-81", image: "https://logonoid.com/images/interpol-logo.jpg" },
+    "Lekr505": { name: "Mit Müsteşarı: 5SS-55 | 23SS-59 | SonSamurai34", image: "https://th.bing.com/th/id/OIP.yTkflZgyttsgqnVT_fxfUAAAAA?rs=1&pid=ImgDetMain" },
+    "Xozowa4": { name: "Meslekler Müdürü: 4ME-44 | xOZOWA4", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "Realmrtty": { name: "Meslekler Müdürü: 4ME-44 | xOZOWA4, realmrtty | Wisconsin State Patrol", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "MKataturkmk": { name: "Sheriff: 7SH-33 | 4SH-89 | ByDeagles, 59SH-34 | Kermesek", image: "https://is3-ssl.mzstatic.com/image/thumb/Purple122/v4/96/ac/09/96ac0920-23d9-73af-97c4-359f98e06bb4/source/512x512bb.jpg" },
+    "ByDeagles": { name: "Sheriff: 7SH-33 | MKataturkmk, 4SH-89 | Kermesek", image: "https://is3-ssl.mzstatic.com/image/thumb/Purple122/v4/96/ac/09/96ac0920-23d9-73af-97c4-359f98e06bb4/source/512x512bb.jpg" },
+    "Kermesek": { name: "Sheriff: 7SH-33 | MKataturkmk, 59SH-34 | ByDeagles", image: "https://is3-ssl.mzstatic.com/image/thumb/Purple122/v4/96/ac/09/96ac0920-23d9-73af-97c4-359f98e06bb4/source/512x512bb.jpg" },
+    "Omerturk1214": { name: "Emniyet Müdürü: 8EM-15 | omerturk1214 | Colonel: 8EM-15 | omerturk1214", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "Hebelseven31": { name: "Trooper: 2T-59 | 4T-32 | 78egepro2", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "78egepro2": { name: "Trooper: 2T-59 | hebelseven31, 4T-32", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "J2ckae": { name: "Fox Valley Metro Police Department: 4FX-81 | j2ckae", image: "https://pbs.twimg.com/profile_images/1384547808859115524/W7m0eCZL_400x400.jpg" },
+    "Kal133kler": { name: "Fox Valley Metro Police Department: 4FX-81 | j2ckae, kal133kler | Wisconsin State Patrol", image: "https://pbs.twimg.com/profile_images/1384547808859115524/W7m0eCZL_400x400.jpg" },
+    "St | 0xb4r4n": { name: "Stajer personel: ST | 0xB4r4n", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "St | BoraPROracer": { name: "Stajer personel: ST | BoraPROracer", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "St | Kreren111": { name: "Stajer personel: ST | Kreren111", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "St | TRAli021": { name: "Stajer personel: ST | TRAli021", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" },
+    "Hebelseven31": { name: "Wisconsin State Patrol: 2T-59 | hebelseven31, 4ME-44 | xOZOWA4, 4T-32 | 78egepro2, 6IP-81 | Risimo22, 8EM-15 | omerturk1214, kal133kler, realmrtty, 6IP-31 | Zarveth, realmrtty", image: "https://www.stickershoppe.com/mm5/graphics/00000001/827-7443.jpg" }
+};
 
-        function searchFunction() {
-            const input = document.getElementById("searchInput").value.toLowerCase();
-            const resultDiv = document.getElementById("result");
-            const profileImage = document.getElementById("profileImage");
-            const resultList = document.createElement("ul");
+function checkLogin() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const loginError = document.getElementById("loginError");
 
-            if (input) {
-                let found = false;
-                for (let key in personelListesi) {
-                    if (key.toLowerCase().includes(input)) {
-                        found = true;
-                        const listItem = document.createElement("li");
-                        listItem.innerHTML = `<strong>${key}</strong> - ${personelListesi[key]}`;
-                        listItem.onclick = function() {
-                            profileImage.src = "https://via.placeholder.com/250"; // Replace with actual image if available
-                            resultDiv.innerHTML = `<strong>${key}</strong> - ${personelListesi[key]}`;
-                        };
-                        resultList.appendChild(listItem);
-                    }
-                }
+    // Doğru kullanıcı adı ve şifre
+    if (username === "KarakolAdmin" && password === "sadeceşeflerbilir") {
+        document.getElementById("loginPanel").style.display = "none";
+        document.getElementById("adminPanel").style.display = "flex";
+    } else {
+        loginError.style.display = "block";
+    }
+}
 
-                if (found) {
-                    resultDiv.innerHTML = "";
-                    resultDiv.appendChild(resultList);
-                } else {
-                    resultDiv.innerHTML = "<p class='not-found'>Hiçbir sonuç bulunamadı.</p>";
-                    profileImage.src = "https://via.placeholder.com/250";
-                }
-            } else {
-                resultDiv.innerHTML = "";
-                profileImage.src = "https://via.placeholder.com/250";
-            }
-        }
+function searchFunction() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const resultDiv = document.getElementById("result");
+    const profileImage = document.getElementById("profileImage");
+    const resultList = document.createElement("ul");
 
-        function createNameList() {
-            const nameList = document.getElementById("nameList");
-            nameList.innerHTML = "";
-            for (let key in personelListesi) {
+    if (input) {
+        let found = false;
+        for (let key in personelListesi) {
+            if (key.toLowerCase().includes(input)) {
+                found = true;
                 const listItem = document.createElement("li");
-                listItem.innerText = key;
-                listItem.onclick = () => {
-                    document.getElementById("searchInput").value = key;
-                    searchFunction();
+                listItem.innerHTML = `<strong>${key}</strong> - ${personelListesi[key].name}`;
+                listItem.onclick = function() {
+                    profileImage.src = personelListesi[key].image;
+                    resultDiv.innerHTML = `<strong>${key}</strong> - ${personelListesi[key].name}`;
                 };
-                nameList.appendChild(listItem);
+                resultList.appendChild(listItem);
             }
         }
 
-        window.onload = createNameList;
-    </script>
+        if (found) {
+            resultDiv.innerHTML = "";
+            resultDiv.appendChild(resultList);
+        } else {
+            resultDiv.innerHTML = "<p class='not-found'>Hiçbir sonuç bulunamadı.</p>";
+            profileImage.src = "https://via.placeholder.com/250";
+        }
+    } else {
+        resultDiv.innerHTML = "";
+        profileImage.src = "https://via.placeholder.com/250";
+    }
+}
+
+function createNameList() {
+    const nameList = document.getElementById("nameList");
+    nameList.innerHTML = "";
+    for (let key in personelListesi) {
+        const listItem = document.createElement("li");
+        listItem.innerText = key;
+        listItem.onclick = () => {
+            document.getElementById("searchInput").value = key;
+            searchFunction();
+        };
+        nameList.appendChild(listItem);
+    }
+}
+
+window.onload = createNameList;
+</script>
 </body>
 </html>
