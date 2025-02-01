@@ -219,6 +219,9 @@ function createNameList() {
     for (let key in personelListesi) {
         const listItem = document.createElement("li");
         listItem.innerText = key;
+        listItem.onmouseover = () => {
+            document.getElementById("profileImage").src = personelListesi[key].image;
+        };
         listItem.onclick = () => {
             document.getElementById("searchInput").value = key;
             searchFunction();
